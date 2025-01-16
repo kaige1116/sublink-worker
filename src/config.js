@@ -1,5 +1,5 @@
-export const SITE_RULE_SET_BASE_URL = 'https://raw.githubusercontent.com/lyc8503/sing-box-rules/refs/heads/rule-set-geosite/';
-export const IP_RULE_SET_BASE_URL = 'https://raw.githubusercontent.com/lyc8503/sing-box-rules/refs/heads/rule-set-geoip/';
+export const SITE_RULE_SET_BASE_URL = 'https://gh.sageer.me/https://raw.githubusercontent.com/lyc8503/sing-box-rules/refs/heads/rule-set-geosite/';
+export const IP_RULE_SET_BASE_URL = 'https://gh.sageer.me/https://raw.githubusercontent.com/lyc8503/sing-box-rules/refs/heads/rule-set-geoip/';
 // Custom rules
 export const CUSTOM_RULES = [];
 // Unified rule structure
@@ -181,6 +181,7 @@ export function generateRules(selectedRules = [], customRules = [], pin) {
 			domain_suffix: rule.domain_suffix ? rule.domain_suffix.split(',') : [],
 			domain_keyword: rule.domain_keyword ? rule.domain_keyword.split(',') : [],
 			ip_cidr: rule.ip_cidr ? rule.ip_cidr.split(',') : [],
+			protocol: rule.protocol ? rule.protocol.split(',') : [],
 			outbound: rule.name
 		  });
 		});
@@ -194,6 +195,7 @@ export function generateRules(selectedRules = [], customRules = [], pin) {
 			  domain_suffix: rule.domain_suffix ? rule.domain_suffix.split(',') : [],
 			  domain_keyword: rule.domain_keyword ? rule.domain_keyword.split(',') : [],
 			  ip_cidr: rule.ip_cidr ? rule.ip_cidr.split(',') : [],
+			  protocol: rule.protocol ? rule.protocol.split(',') : [],
 			  outbound: rule.name
 			});
 		  });
@@ -370,7 +372,7 @@ export const SING_BOX_CONFIG = {
 	},
 	inbounds: [
 		{ type: 'mixed', tag: 'mixed-in', listen: '0.0.0.0', listen_port: 2080 },
-		{ type: 'tun', tag: 'tun-in', inet4_address: '172.19.0.1/30', auto_route: true, strict_route: true, stack: 'mixed', sniff: true }
+		{ type: 'tun', tag: 'tun-in', address: '172.19.0.1/30', auto_route: true, strict_route: true, stack: 'mixed', sniff: true }
 	],
 	outbounds: [
 		{ type: 'direct', tag: 'DIRECT' },
