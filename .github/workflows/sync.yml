@@ -1,18 +1,22 @@
 name: Sync with Upstream
 on:
   schedule:
-    - cron: '0 0 * * *' # 每天0点执行
-  workflow_dispatch: # 允许手动触发
+    - cron: '0 0 * * *' # 每天0点自动执行
+  workflow_dispatch: # 允许手动触发（在GitHub Actions页面点击执行）
 jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Sync Upstream
+      - name: Sync Upstream Repository
         uses: repo-sync/github-sync@v2.0.0
         with:
-          source-repo: '7Sageer/sublink-worker' # 上游仓库路径
-          target-repo: 'kaige1116/sublink-worker' # 下游仓库路径
-          target-branch: 'main' # 下游目标分支
-          source-branch: 'main' # 上游源分支
-          token: ${{ secrets.GITHUB_TOKEN }}
-          merge-strategy: 'theirs' # 冲突时保留上游（覆盖下游）
+          # 1. 上游仓库信息（必填，格式：用户名/仓库名）
+          source_repo: '7Sageer/sublink-worker' 
+          # 2. 上游分支（必填，与下游目标分支对应，如均为main）
+          source_branch: 'main' 
+          # 3. 下游目标分支（必填，即你fork仓库的分支）
+          destination_branch: 'main' 
+          # 4. 认证Token（必填，使用GitHub内置Token即可）
+          github_token: ${{ secrets.GITHUB_TOKEN }} 
+          # 5. 冲突处理：通过args传递“保留上游”策略（核心）
+          args: '--merge-strategy theirs'
