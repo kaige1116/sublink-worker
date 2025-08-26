@@ -2,21 +2,24 @@ name: Sync with Upstream
 on:
   schedule:
     - cron: '0 0 * * *' # 每天0点自动执行
-  workflow_dispatch: # 允许手动触发（在GitHub Actions页面点击执行）
+  workflow_dispatch: # 允许手动触发
 jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Sync Upstream Repository
+      # 关键步骤：先检出下游仓库代码，建立Git环境（必须放在repo-sync之前）
+      - name: Checkout Downstream Repository
+        uses: actions/checkout@v4
+        with:
+          ref: main # 检出下游目标分支（需与后续destination_branch一致）
+          fetch-depth: 0 # 拉取完整的Git历史，确保合并时无缺失
+
+      # 同步上游仓库（此时已存在Git环境，不会报错）
+      - name: Sync Upstream to Downstream
         uses: repo-sync/github-sync@v2.0.0
         with:
-          # 1. 上游仓库信息（必填，格式：用户名/仓库名）
-          source_repo: '7Sageer/sublink-worker' 
-          # 2. 上游分支（必填，与下游目标分支对应，如均为main）
-          source_branch: 'main' 
-          # 3. 下游目标分支（必填，即你fork仓库的分支）
-          destination_branch: 'main' 
-          # 4. 认证Token（必填，使用GitHub内置Token即可）
-          github_token: ${{ secrets.GITHUB_TOKEN }} 
-          # 5. 冲突处理：通过args传递“保留上游”策略（核心）
-          args: '--merge-strategy theirs'
+          source_repo: '7Sageer/sublink-worker' # 上游仓库（用户名/仓库名）
+          source_branch: 'main' # 上游分支
+          destination_branch: 'main' # 下游目标分支（与checkout的ref一致）
+          github_token: ${{ secrets.GITHUB_TOKEN }} # 内置Token
+          args: '--merge-strategy theirs' # 冲突时保留上游（覆盖下游）
