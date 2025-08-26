@@ -3,23 +3,35 @@ on:
   schedule:
     - cron: '0 0 * * *' # 每天0点自动执行
   workflow_dispatch: # 允许手动触发
+
+# 定义你提供的变量（方便后续修改）
+env:
+  UPSTREAM_REPO: 7Sageer/sublink-worker # 注意：repo-sync需“用户名/仓库名”格式，无需完整URL
+  UPSTREAM_BRANCH: main # 上游分支（对应BRANCHES的前半部分main）
+  DOWNSTREAM_BRANCH: main # 下游分支（对应BRANCHES的后半部分main）
+
 jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      # 关键步骤：先检出下游仓库代码，建立Git环境（必须放在repo-sync之前）
+      # 步骤1：检出下游仓库代码
       - name: Checkout Downstream Repository
         uses: actions/checkout@v4
         with:
-          ref: main # 检出下游目标分支（需与后续destination_branch一致）
-          fetch-depth: 0 # 拉取完整的Git历史，确保合并时无缺失
+          ref: ${{ env.DOWNSTREAM_BRANCH }} # 检出下游目标分支
+          fetch-depth: 0 # 拉取完整Git历史
 
-      # 同步上游仓库（此时已存在Git环境，不会报错）
+      # 步骤2：解决“dubious ownership”权限问题（核心修正）
+      - name: Add Workspace to Git Safe Directory
+        shell: bash
+        run: git config --global --add safe.directory /github/workspace
+
+      # 步骤3：同步上游仓库
       - name: Sync Upstream to Downstream
         uses: repo-sync/github-sync@v2.0.0
         with:
-          source_repo: '7Sageer/sublink-worker' # 上游仓库（用户名/仓库名）
-          source_branch: 'main' # 上游分支
-          destination_branch: 'main' # 下游目标分支（与checkout的ref一致）
-          github_token: ${{ secrets.GITHUB_TOKEN }} # 内置Token
+          source_repo: ${{ env.UPSTREAM_REPO }} # 引用上游仓库（用户名/仓库名）
+          source_branch: ${{ env.UPSTREAM_BRANCH }} # 上游分支
+          destination_branch: ${{ env.DOWNSTREAM_BRANCH }} # 下游分支
+          github_token: ${{ secrets.GITHUB_TOKEN }} # 认证Token
           args: '--merge-strategy theirs' # 冲突时保留上游（覆盖下游）
