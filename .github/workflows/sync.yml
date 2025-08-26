@@ -10,8 +10,8 @@ jobs:
       - name: Sync Upstream
         uses: repo-sync/github-sync@v2.0.0
         with:
-          source-repo: 'upstream-owner/original-repo' # 上游仓库路径
-          target-repo: 'your-username/your-fork' # 下游仓库路径
+          source-repo: '7Sageer/sublink-worker' # 上游仓库路径
+          target-repo: 'kaige1116/sublink-worker' # 下游仓库路径
           target-branch: 'main' # 下游目标分支
           source-branch: 'main' # 上游源分支
           token: ${{ secrets.GITHUB_TOKEN }}
