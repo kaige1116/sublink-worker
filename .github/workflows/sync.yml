@@ -1,0 +1,18 @@
+name: Sync with Upstream
+on:
+  schedule:
+    - cron: '0 0 * * *' # 每天0点执行
+  workflow_dispatch: # 允许手动触发
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sync Upstream
+        uses: repo-sync/github-sync@v2.0.0
+        with:
+          source-repo: 'upstream-owner/original-repo' # 上游仓库路径
+          target-repo: 'your-username/your-fork' # 下游仓库路径
+          target-branch: 'main' # 下游目标分支
+          source-branch: 'main' # 上游源分支
+          token: ${{ secrets.GITHUB_TOKEN }}
+          merge-strategy: 'theirs' # 冲突时保留上游（覆盖下游）
