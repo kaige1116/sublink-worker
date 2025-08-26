@@ -1,37 +1,26 @@
-name: Sync with Upstream
+name: Upstream Sync
 on:
   schedule:
-    - cron: '0 0 * * *' # 每天0点自动执行
+    - cron: '0 0 * * *' # 每天0点执行一次，可根据需求修改
   workflow_dispatch: # 允许手动触发
-
-# 定义你提供的变量（方便后续修改）
-env:
-  UPSTREAM_REPO: 7Sageer/sublink-worker # 注意：repo-sync需“用户名/仓库名”格式，无需完整URL
-  UPSTREAM_BRANCH: main # 上游分支（对应BRANCHES的前半部分main）
-  DOWNSTREAM_BRANCH: main # 下游分支（对应BRANCHES的后半部分main）
-
 jobs:
-  sync:
+  sync_with_upstream:
+    name: Sync with Upstream
+    if: ${{ github.event.repository.fork }}
     runs-on: ubuntu-latest
     steps:
-      # 步骤1：检出下游仓库代码
-      - name: Checkout Downstream Repository
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ env.DOWNSTREAM_BRANCH }} # 检出下游目标分支
-          fetch-depth: 0 # 拉取完整Git历史
-
-      # 步骤2：解决“dubious ownership”权限问题（核心修正）
-      - name: Add Workspace to Git Safe Directory
-        shell: bash
-        run: git config --global --add safe.directory /github/workspace
-
-      # 步骤3：同步上游仓库
-      - name: Sync Upstream to Downstream
-        uses: repo-sync/github-sync@v2.0.0
-        with:
-          source_repo: ${{ env.UPSTREAM_REPO }} # 引用上游仓库（用户名/仓库名）
-          source_branch: ${{ env.UPSTREAM_BRANCH }} # 上游分支
-          destination_branch: ${{ env.DOWNSTREAM_BRANCH }} # 下游分支
-          github_token: ${{ secrets.GITHUB_TOKEN }} # 认证Token
-          args: '--merge-strategy theirs' # 冲突时保留上游（覆盖下游）
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        persist-credentials: false
+    - name: Sync Upstream
+      uses: aormsby/Fork-Sync-With-Upstream-action@v3.4
+      with:
+        target_repo_token: ${{ secrets.GITHUB_TOKEN }}
+        upstream_sync_repo: 7Sageer/sublink-worker # 替换为原始仓库的路径
+        upstream_sync_branch: main # 替换为原始仓库的主分支名称
+        target_sync_branch: main # 替换为你要同步的分支名称
+        override: true # 添加此参数以覆盖下游文件
+    - name: Check for Failure
+      if: ${{ failure() }}
+      run: echo "(Error) Due to a change in the workflow file of the upstream repository, GitHub has automatically suspended the scheduled automatic update. You need to manually sync your fork."
